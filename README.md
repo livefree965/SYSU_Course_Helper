@@ -1,6 +1,8 @@
 ﻿
 # SYSU Course Helper
+
 ![][1] ![][2] ![][3] ![][4] ![][5]
+
 A tool aiming to help the student in Sun Yat-Sen University in Chinese mainland elect course more efficiently,is written by Python.It offers functions including checking courses,electing and unelecting courses,seeking courses by keyword and so on.Besides,you can easily get the data by import the py,and develop what you want based on it.The project provides the source code and the executable file packed by pyinstaller.You can just download the executable file for use.
 
 ## Requirement
