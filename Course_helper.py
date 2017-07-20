@@ -1,4 +1,3 @@
-import tkinter
 import requests
 from bs4 import BeautifulSoup
 from time import ctime,sleep
@@ -59,7 +58,7 @@ class CourseSystem:
             print(info)
 
     # 打印可选课程以及选课情况
-    def PrintAllCourse(self, choose,removeconflict=0,sort_name="None",isreverse=0):
+    def PrintAllCourse(self, choose,removeconflict=0,sort_name="None",isreverse=False):
         all_course_data = self.__DataHandlerObj.GetAllCourse(choose)
         print("已选课程：")
         for data in all_course_data[0]:
@@ -70,13 +69,17 @@ class CourseSystem:
                 if (not removeconflict) or data[9]!='forbid_elect':
                     print(data)
         else:
-            for data in sorted(all_course_data[1],key=lambda course:course[sort_name],reverse=1):
+            for data in sorted(all_course_data[1],key=lambda course:course[sort_name],reverse=isreverse):
                 if (not removeconflict) or data[9]!='forbid_elect':
                     print(data)
 
     # 选课
     def ChooseCourseFeedBack(self, pos, oper):
-        status = self.__DataHandlerObj.ChooseCourse(self.__FoundCourse[pos], oper)
+        try:
+            status = self.__DataHandlerObj.ChooseCourse(self.__FoundCourse[pos], oper)
+        except IndexError:
+            print("好像序号不太对喔")
+            return 1
         return int(status[15])
 
     # 打印目标课程
@@ -86,7 +89,7 @@ class CourseSystem:
         for course in self.__FoundCourse:
             print(course)
         print("查找结束,总共找到" + str(len(self.__FoundCourse)) + "个结果")
-
+        return len(self.__FoundCourse)
 
 class DataHandler:
     __logpage = ""
@@ -154,30 +157,36 @@ class DataHandler:
         elected = []
         unelect = []
         res = []
-        for info in BeautifulSoup(all_course_page.text, 'html.parser').findAll('tbody')[0].findAll('tr'):
-            info_text = info.findAll('td')
-            if info_text[0].text.find('退选') >= 1:
-                elected.append(
-                    [info_text[1].string, info_text[2].string.strip(), info_text[3].string, info_text[4].string,
-                     info_text[5].string, info_text[6].string, info_text[7].string, info_text[8].string.strip(),
-                     info_text[9].string, info.find('a')['jxbh'], courseclass])
-            else:
-                elected.append(
-                    [info_text[1].string, info_text[2].string.strip(), info_text[3].string, info_text[4].string,
-                     info_text[5].string, info_text[6].string, info_text[7].string, info_text[8].string.strip(),
-                     info_text[9].string, "forbid_unelect", courseclass])
-        for info in BeautifulSoup(all_course_page.text, 'html.parser').findAll('tbody')[1].findAll('tr'):
-            info_text = info.findAll('td')
-            if  info_text[0].text.find('选课') >= 1:
-                unelect.append(
-                    [info_text[1].string, info_text[2].string.strip(), info_text[3].string, info_text[4].string,
-                     info_text[5].string, info_text[6].string, info_text[7].string, info_text[8].string.strip(),
-                     info_text[9].string, info.find('a')['jxbh'], courseclass])
-            else:
-                unelect.append(
-                    [info_text[1].string, info_text[2].string.strip(), info_text[3].string, info_text[4].string,
-                     info_text[5].string, info_text[6].string, info_text[7].string, info_text[8].string.strip(),
-                     info_text[9].string, "forbid_elect", courseclass])
+        try:
+            for info in BeautifulSoup(all_course_page.text, 'html.parser').findAll('tbody')[0].findAll('tr'):
+                info_text = info.findAll('td')
+                if info_text[0].text.find('退选') >= 1:
+                    elected.append(
+                        [info_text[1].string, info_text[2].string.strip(), info_text[3].string, info_text[4].string,
+                         info_text[5].string, info_text[6].string, info_text[7].string, info_text[8].string.strip(),
+                         info_text[9].string, info.find('a')['jxbh'], courseclass])
+                else:
+                    elected.append(
+                        [info_text[1].string, info_text[2].string.strip(), info_text[3].string, info_text[4].string,
+                         info_text[5].string, info_text[6].string, info_text[7].string, info_text[8].string.strip(),
+                         info_text[9].string, "forbid_unelect", courseclass])
+        except IndexError:
+            pass
+        try:
+            for info in BeautifulSoup(all_course_page.text, 'html.parser').findAll('tbody')[1].findAll('tr'):
+                info_text = info.findAll('td')
+                if  info_text[0].text.find('选课') >= 1:
+                    unelect.append(
+                        [info_text[1].string, info_text[2].string.strip(), info_text[3].string, info_text[4].string,
+                         info_text[5].string, info_text[6].string, info_text[7].string, info_text[8].string.strip(),
+                         info_text[9].string, info.find('a')['jxbh'], courseclass])
+                else:
+                    unelect.append(
+                        [info_text[1].string, info_text[2].string.strip(), info_text[3].string, info_text[4].string,
+                         info_text[5].string, info_text[6].string, info_text[7].string, info_text[8].string.strip(),
+                         info_text[9].string, "forbid_elect", courseclass])
+        except IndexError:
+            pass
         res.append(elected)
         res.append(unelect)
         return res
@@ -235,9 +244,10 @@ def execute():
     print(">>>2.查看选课结果")
     print(">>>3.查看某课程范围课程情况")
     print(">>>4.查找相关课程")
-    print(">>>5.退出")
+    print(">>>5.监控选课")
+    print(">>>6.退出")
     user_input=int(input())
-    if user_input==5:
+    if user_input==6:
         exit()
     elif user_input==1:
         COURSE_HELPER.PrintFoundCourse(input(">>>请输入课程关键字（支持模糊搜索）\n"))
@@ -245,15 +255,18 @@ def execute():
         pos_choose=int(input(">>>请输入目标课程序号（列表第一个则输入1）\n"))-1
         status=-1
         global msgs
+        times = 0
         if index_choose==1:
-            while status!=0:
+            while status!=0 and times<=10:
                 status=COURSE_HELPER.ChooseCourseFeedBack(pos_choose,'elect')
                 print(msgs[status])
+                times+=1
                 sleep(1)
         else:
-            while status!=0:
+            while status!=0 and times<=10:
                 status = COURSE_HELPER.ChooseCourseFeedBack(pos_choose, 'unelect')
                 print(msgs[status])
+                times+=1
                 sleep(1)
         print(">>>操作完成")
     elif user_input==2:
@@ -276,9 +289,21 @@ def execute():
                 COURSE_HELPER.PrintAllCourse(int(input_set[0]) - 1, int(input_set[1]))
             else:
                 COURSE_HELPER.PrintAllCourse(int(input_set[0]) - 1)
-    else:
+    elif user_input==4:
         COURSE_HELPER.PrintFoundCourse(input(">>>请输入课程关键字（支持模糊搜索）\n"))
-
+    elif user_input==5:
+        obj_course=input(">>>请输入课程关键字（支持模糊搜索）\n")
+        interval=int(input(">>>请设置间隔时间"))
+        while COURSE_HELPER.PrintFoundCourse(obj_course)==0:
+            sleep(interval)
+        print(">>>目标课程发现")
+        status = -1
+        times = 0
+        while status != 0 and times <= 10:
+            status = COURSE_HELPER.ChooseCourseFeedBack(1, 'elect')
+            print(msgs[status])
+            times += 1
+            sleep(1)
 if __name__ == "__main__":
     COURSE_HELPER=CourseSystem()
     log()
