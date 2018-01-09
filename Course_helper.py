@@ -316,8 +316,9 @@ def execute():
         status = -1
         times = 0
         while status != 0 and times <= 10:
-            status = COURSE_HELPER.ChooseCourseFeedBack(1, 'elect')
-            print(msgs[status])
+            print("功能尚未稳定测试，请自行选课")
+            #status = COURSE_HELPER.ChooseCourseFeedBack(1, 'elect')
+            #print(msgs[status])
             times += 1
             sleep(1)
 

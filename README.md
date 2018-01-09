@@ -10,6 +10,7 @@ A tool aiming to help the student in Sun Yat-Sen University in Chinese mainland 
 - 尚未更新打包二进制文件，需要的同学请自行根据要求配置环境
 - 相关功能尚未完善，有问题请[submit issue][9]
 - 将会在寒假期间进行大规模更新，欢迎Star
+- 稳定的功能是监控选课，大家可以挂着捡漏...(Tips:间隔请合理设置不要太频繁)
 
 ## Update log
 
