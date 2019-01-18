@@ -5,6 +5,9 @@ import json
 import os
 from prettytable import PrettyTable
 
+d = webdriver.Chrome()
+selectedCateMap = {"本专业": 1, "校级公选": 4, "跨专业": 2, "专必": 11, "专选": 21, "院内公选": 30, "公必(体育)": 10, "公必(大英)": 10}
+selectedTypeMap = {"本专业": 1, "校级公选": 4, "跨专业": 2, "专必": 11, "专选": 1, "院内公选": 1, "公必(体育)": 3, "公必(大英)": 5}
 header = {'Host': 'uems.sysu.edu.cn',
           'Connection': 'keep-alive',
           'Origin': 'https://uems.sysu.edu.cn',
@@ -51,8 +54,15 @@ class Course_Help:
             json.dump(self.config, f)
 
     def login(self):
-        if self.config["cookies"] != None:
+        tmp = json.loads(self.session.post(
+            "https://uems.sysu.edu.cn/jwxt/choose-course-front-server/classCourseInfo/course/list?_t=1547795769",
+            cookies=self.config['cookies'], headers=header).text)
+        if json.loads(self.session.post(
+                "https://uems.sysu.edu.cn/jwxt/choose-course-front-server/classCourseInfo/course/list?_t=1547795769",
+                cookies=self.config['cookies'], headers=header).text)["code"] != 53000007:
             return
+        # if self.config["cookies"] != None:
+        #     return
         self.brower = webdriver.Chrome()
         self.brower.get(
             "https://cas.sysu.edu.cn/cas/login?service=https%3A%2F%2Fuems.sysu.edu.cn%2Fjwxt%2Fapi%2Fsso%2Fcas%2Flogin%3Fpattern%3Dstudent-login")
@@ -76,12 +86,15 @@ class Course_Help:
                  "param": {"semesterYear": "2018-2", "selectedType": "1", "selectedCate": "21",
                            "hiddenConflictStatus": "0",
                            "hiddenSelectedStatus": "0", "collectionStatus": "0"}}
-
         res = self.session.post(
             "https://uems.sysu.edu.cn/jwxt/choose-course-front-server/classCourseInfo/course/list?_t=1547795769",
             cookies=self.config['cookies'], headers=header, data=json.dumps(datas))
         res.encoding = 'utf8'
         course_data = json.loads(res.text)['data']['rows']
+        self.print_course(course_data)
+        pass
+
+    def print_course(self, course_data):
         form = PrettyTable(["课程号", "课程名", "学分", "考察形式", "已选人数", "剩余空位"])
         for item in course_data:
             if (self.config['consider_add']):
@@ -95,7 +108,6 @@ class Course_Help:
                      item['courseSelectedNum'],
                      item['baseReceiveNum'] - int(item['courseSelectedNum'])])
         print(form)
-        pass
 
 
 if __name__ == "__main__":
