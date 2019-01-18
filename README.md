@@ -14,6 +14,8 @@ A tool aiming to help the student in Sun Yat-Sen University in Chinese mainland 
 
 ## Update log
 
+- v 2.0(2019.1.18)
+  - New version with new code!Under working!
 - v 1.2(2018.1.9)
   - Amendments to the elective system update, adding CAPTCHA mechanism
 - v 1.1(2017.7.20)
